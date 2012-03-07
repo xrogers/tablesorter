@@ -5,7 +5,7 @@
 	<title>jQuery plugin: Tablesorter 2.0 - Writing custom widgets</title>
 
 	<!-- jQuery -->
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
 
 	<!-- Demo stuff -->
 	<link rel="stylesheet" href="css/jq.css">
@@ -51,7 +51,9 @@
 				// i mod 6 = 5, is true every 5th row, starting from the 5th, etc.
 				if ((i%5) === 4) {
 					$("tbody tr:eq(" + i + ")",table).before(
-						$("<tr></tr>").addClass("repeated-header").html(this.headers.join(""))
+						// "remove-me" class was added in case the table needs to be updated, the "remove-me" rows will be
+						// removed prior to the update to prevent including the rows in the update - see "selectorRemove" option
+						$("<tr></tr>").addClass("repeated-header remove-me").html(this.headers.join(""))
 					);
 				}
 			}
