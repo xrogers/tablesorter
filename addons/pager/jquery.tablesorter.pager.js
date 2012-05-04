@@ -1,6 +1,6 @@
 /*!
  * tablesorter pager plugin
- * updated 4/28/2012
+ * updated 5/3/2012
  */
 ;(function($) {
 	$.extend({tablesorterPager: new function() {
@@ -235,7 +235,7 @@
 				if (e > rows.length ) {
 					e = rows.length;
 				}
-				$(table.tBodies[0]).empty();
+				$.tablesorter.clearTableBody(table);
 				for (i = s; i < e; i++) {
 					o = rows[i];
 					l = o.length;
