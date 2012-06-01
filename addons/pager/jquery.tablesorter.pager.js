@@ -1,6 +1,6 @@
 /*!
  * tablesorter pager plugin
- * updated 5/11/2012
+ * updated 5/28/2012
  */
 ;(function($) {
 	$.extend({tablesorterPager: new function() {
@@ -235,6 +235,7 @@
 				if (e > rows.length ) {
 					e = rows.length;
 				}
+				$(table.tBodies[0]).addClass('tablesorter-hidden');
 				$.tablesorter.clearTableBody(table);
 				for (i = s; i < e; i++) {
 					o = rows[i];
@@ -244,6 +245,7 @@
 					}
 				}
 				table.tBodies[0].appendChild(f);
+				$(table.tBodies[0]).removeClass('tablesorter-hidden');
 			}
 			if ( c.page >= c.totalPages ) {
 				moveToLastPage(table, c);
@@ -365,7 +367,7 @@
 				} else {
 					c.ajax = false;
 					// Regular pager; all rows stored in memory
-					$(this).trigger("appendCache");
+					$(this).trigger("appendCache", true);
 					hideRowsSetup(table, c);
 				}
 
