@@ -1,5 +1,5 @@
 ﻿/*!
-* TableSorter 2.3.6 - Client-side table sorting with ease!
+* TableSorter 2.3.7 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -18,7 +18,7 @@
 	$.extend({
 		tablesorter: new function() {
 
-			this.version = "2.3.6";
+			this.version = "2.3.7";
 
 			var parsers = [], widgets = [];
 			this.defaults = {
@@ -201,19 +201,6 @@
 			}
 
 			/* utils */
-			function buildRegex(){
-				var a, acc = '[', t = $.tablesorter,
-					reg = t.characterEquivalents;
-				t.characterRegexArray = {};
-				for (a in reg) {
-					if (typeof a === 'string') {
-						acc += reg[a];
-						t.characterRegexArray[a] = new RegExp('[' + reg[a] + ']', 'g');
-					}
-				}
-				t.characterRegex = new RegExp(acc + ']');
-			}
-
 			function buildCache(table) {
 				var b = table.tBodies,
 				tc = table.config,
@@ -515,7 +502,7 @@
 								dir = (tc.strings[c]) ? tc.string[tc.strings[c]] || 0 : 0;
 							}
 						}
-						dynamicExp += "var " + e + " = sort" + s + "(table, a[" + c + "],b[" + c + "]," + c + "," + mx +  "," + dir + "); ";
+						dynamicExp += "var " + e + " = sort" + s + "(table,a[" + c + "],b[" + c + "]," + c + "," + mx +  "," + dir + "); ";
 						dynamicExp += "if (" + e + ") { return " + e + "; } ";
 						dynamicExp += "else { ";
 					}
@@ -635,8 +622,6 @@
 					// save the settings where they read
 					$.data(this, "tablesorter", c);
 					c.supportsTextContent = $('<span>x</span>')[0].textContent === 'x';
-					// build up character equivalent cross-reference
-					buildRegex();
 					// digit sort text location; keeping max+/- for backwards compatibility
 					c.string = { 'max': 1, 'min': -1, 'max+': 1, 'max-': -1, 'zero': 0, 'none': 0, 'null': 0, 'top': true, 'bottom': false };
 					// build headers
@@ -658,7 +643,6 @@
 
 						// prevent resizable widget from initializing a sort (long clicks are ignored)
 						if (external !== true && (new Date().getTime() - downTime > 500)) { return false; }
-
 						if (c.delayInit && !c.cache) { buildCache($this[0]); }
 						if (!this.sortDisabled) {
 							// Only call sortStart if sorting is enabled.
@@ -772,9 +756,11 @@
 					})
 					.bind("updateCell", function(e, cell, resort) {
 						// get position from the dom.
-						var t = this, pos = [(cell.parentNode.rowIndex - 1), cell.cellIndex],
+						var t = this, $tb = $(this).find('tbody'), row, pos,
 						// update cache - format: function(s, table, cell, cellIndex)
-						tbdy = $(this).find('tbody').index( $(cell).closest('tbody') );
+						tbdy = $tb.index( $(cell).closest('tbody') );
+						row = $tb.eq(tbdy).find('tr').index( $(cell).closest('tr') );
+						pos = [ row, cell.cellIndex];
 						t.config.cache[tbdy].normalized[pos[0]][pos[1]] = c.parsers[pos[1]].format( getElementText(t, cell, pos[1]), t, cell, pos[1] );
 						if (resort !== false) { $(this).trigger("sorton", [c.sortList]); }
 					})
@@ -928,8 +914,18 @@
 				"U" : "\u00da\u00d9\u00db\u00dc" // ÚÙÛÜ
 			};
 			this.replaceAccents = function(s) {
+				var a, acc = '[', eq = this.characterEquivalents;
+				if (!this.characterRegex) {
+					this.characterRegexArray = {};
+					for (a in eq) {
+						if (typeof a === 'string') {
+							acc += eq[a];
+							this.characterRegexArray[a] = new RegExp('[' + eq[a] + ']', 'g');
+						}
+					}
+					this.characterRegex = new RegExp(acc + ']');
+				}
 				if (this.characterRegex.test(s)) {
-					var a, eq = this.characterEquivalents;
 					for (a in eq) {
 						if (typeof a === 'string') {
 							s = s.replace( this.characterRegexArray[a], a );
@@ -1027,7 +1023,7 @@
 	ts.addParser({
 		id: "url",
 		is: function(s) {
-			return (/^(https?|ftp|file):\/\/$/).test(s);
+			return (/^(https?|ftp|file):\/\//).test(s);
 		},
 		format: function(s) {
 			return $.trim(s.replace(/(https?|ftp|file):\/\//, ''));
