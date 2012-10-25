@@ -1,6 +1,6 @@
 /*!
  * tablesorter pager plugin
- * updated 10/17/2012
+ * updated 10/25/2012
  */
 /*jshint browser:true, jquery:true */
 ;(function($) {
@@ -11,7 +11,7 @@
 			// target the pager markup
 			container: null,
 
-			// use this format: "http:/mydatabase.com?page={page}&size={size}&{sortList:col}"
+			// use this format: "http://mydatabase.com?page={page}&size={size}&{sortList:col}"
 			// where {page} is replaced by the page number and {size} is replaced by the number of records to show
 			// {sortList:col} adds the sortList to the url into a "col" array.
 			// So a sortList = [[2,0],[3,0]] becomes "&col[2]=0&col[3]=0" in the url
@@ -167,7 +167,7 @@
 		},
 
 		hideRowsSetup = function(table, c){
-			c.size = parseInt( $(c.cssPageSize, c.container).val(), 10 ) || c.size;
+			c.size = parseInt( $(c.cssPageSize, c.container).find('option[selected]').val(), 10 ) || c.size;
 			$.data(table, 'pagerLastSize', c.size);
 			pagerArrows(c);
 			if ( !c.removeRows ) {
@@ -209,7 +209,7 @@
 					$sh = $t.find('.' + ((tc.widgetOptions && tc.widgetOptions.stickyHeaders) || 'tablesorter-stickyheader'));
 					$f = $t.find('tfoot tr:first').children();
 					$t.find('th.' + tc.cssHeader).each(function(j){
-						var $t = $(this), tar, icn;
+						var $t = $(this), icn;
 						// add new test within the first span it finds, or just in the header
 						if ( $t.find('.' + tc.cssIcon).length ) {
 							icn = $t.find('.' + tc.cssIcon).clone(true);
@@ -248,7 +248,7 @@
 		getAjax = function(table, c){
 			var $t = $(table),
 			url = (c.ajaxUrl) ? c.ajaxUrl.replace(/\{page\}/g, c.page).replace(/\{size\}/g, c.size) : '',
-			k, arry = [],
+			arry = [],
 			sl = table.config.sortList,
 			col = url.match(/\{sortList[\s+]?:[\s+]?(.*)\}/);
 			if (col) {
@@ -389,7 +389,8 @@
 			var p = $(c.cssPageSize, c.container).removeClass(c.cssDisabled).removeAttr('disabled');
 			c.isDisabled = false;
 			c.page = $.data(table, 'pagerLastPage') || c.page || 0;
-			c.size = $.data(table, 'pagerLastSize') || parseInt(p.val(), 10) || c.size;
+			c.size = $.data(table, 'pagerLastSize') || parseInt(p.find('option[selected]').val(), 10) || c.size;
+			p.val(c.size); // set page size
 			c.totalPages = Math.ceil( Math.min( c.totalPages, c.filteredPages ) / c.size);
 			if ( triggered ) {
 				$(table).trigger('update');
@@ -433,14 +434,15 @@
 				}
 
 				// update pager after filter widget completes
-				if ( $(table).hasClass('hasFilters') ) {
-					$(table).unbind('filterEnd.pager').bind('filterEnd.pager', function() {
+				$(table)
+					.unbind('filterEnd.pager updateComplete.pager ')
+					.bind('filterEnd.pager updateComplete.pager', function() {
 						c.page = 0;
 						updatePageDisplay(table, c);
 						moveToPage(table, c);
 						changeHeight(table, c);
 					});
-				}
+
 				if ( $(c.cssGoto, pager).length ) {
 					$(c.cssGoto, pager).bind('change', function(){
 						c.page = $(this).val() - 1;
