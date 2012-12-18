@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.5.2 - Client-side table sorting with ease!
+* TableSorter 2.6 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -14,11 +14,12 @@
 * @author Christian Bach/christian.bach@polyester.se
 * @contributor Rob Garrison/https://github.com/Mottie/tablesorter
 */
-/*jshint browser:true, jquery:true, unused:false */
+/*jshint browser:true, jquery:true, unused:false, expr: true */
 /*global console:false, alert:false */
 !(function($) {
 	"use strict";
 	$.extend({
+		/*jshint supernew:true */
 		tablesorter: new function() {
 
 			var ts = this;
@@ -38,8 +39,10 @@
 				cancelSelection  : true,       // prevent text selection in the header
 				dateFormat       : 'mmddyyyy', // other options: "ddmmyyy" or "yyyymmdd"
 				sortMultiSortKey : 'shiftKey', // key used to select additional columns
+				sortResetKey     : 'ctrlKey',  // key used to remove sorting on a column
 				usNumberFormat   : true,       // false for German "1.234.567,89" or French "1 234 567,89"
 				delayInit        : false,      // if false, the parsed table contents will not update until the first sort
+				serverSideSorting: false,      // if true, server-side sorting should be performed because client-side sorting will be disabled, but the ui and events will still be used.
 
 				// sort options
 				headers          : {},         // set sorter, string, empty, locked order, sortInitialOrder, filter, etc.
@@ -454,11 +457,13 @@
 			}
 
 			// sort multiple columns
-/* */
 			function multisort(table) { /*jshint loopfunc:true */
 				var dynamicExp, sortWrapper, col, mx = 0, dir = 0, tc = table.config,
 				sortList = tc.sortList, l = sortList.length, bl = table.tBodies.length,
 				sortTime, i, j, k, c, colMax, cache, lc, s, e, order, orgOrderCol;
+				if (tc.serverSideSorting) {
+					return;
+				}
 				if (tc.debug) { sortTime = new Date(); }
 				for (k = 0; k < bl; k++) {
 					colMax = tc.cache[k].colMax;
@@ -568,7 +573,7 @@
 							// $cell = $(this);
 							k = !e[c.sortMultiSortKey];
 							// get current column sort order
-							cell.count = (cell.count + 1) % (c.sortReset ? 3 : 2);
+							cell.count = e[c.sortResetKey] ? 2 : (cell.count + 1) % (c.sortReset ? 3 : 2);
 							// reset all sorts on non-current column - issue #30
 							if (c.sortRestart) {
 								i = cell;
@@ -693,6 +698,7 @@
 						// no closest in jQuery v1.2.6 - tbdy = $tb.index( $(cell).closest('tbody') ),$row = $(cell).closest('tr');
 						tbdy = $tb.index( $(cell).parents('tbody').filter(':last') ),
 						$row = $(cell).parents('tr').filter(':last');
+						cell = $(cell)[0]; // in case cell is a jQuery object
 						// tbody may not exist if update is initialized while tbody is removed for processing
 						if ($tb.length && tbdy >= 0) {
 							row = $tb.eq(tbdy).find('tr').index( $row );
@@ -960,19 +966,20 @@
 
 			// used when replacing accented characters during sorting
 			ts.characterEquivalents = {
-				"a" : "\u00e1\u00e0\u00e2\u00e3\u00e4", // áàâãä
-				"A" : "\u00c1\u00c0\u00c2\u00c3\u00c4", // ÁÀÂÃÄ
-				"c" : "\u00e7", // ç
-				"C" : "\u00c7", // Ç
-				"e" : "\u00e9\u00e8\u00ea\u00eb", // éèêë
-				"E" : "\u00c9\u00c8\u00ca\u00cb", // ÉÈÊË
-				"i" : "\u00ed\u00ec\u0130\u00ee\u00ef", // íìİîï
+				"a" : "\u00e1\u00e0\u00e2\u00e3\u00e4\u0105\u00e5", // áàâãäąå
+				"A" : "\u00c1\u00c0\u00c2\u00c3\u00c4\u0104\u00c5", // ÁÀÂÃÄĄÅ
+				"c" : "\u00e7\u0107\u010d", // çćč
+				"C" : "\u00c7\u0106\u010c", // ÇĆČ
+				"e" : "\u00e9\u00e8\u00ea\u00eb\u011b\u0119", // éèêëěę
+				"E" : "\u00c9\u00c8\u00ca\u00cb\u011a\u0118", // ÉÈÊËĚĘ
+				"i" : "\u00ed\u00ec\u0130\u00ee\u00ef\u0131", // íìİîïı
 				"I" : "\u00cd\u00cc\u0130\u00ce\u00cf", // ÍÌİÎÏ
 				"o" : "\u00f3\u00f2\u00f4\u00f5\u00f6", // óòôõö
 				"O" : "\u00d3\u00d2\u00d4\u00d5\u00d6", // ÓÒÔÕÖ
-				"S" : "\u00df", // ß
-				"u" : "\u00fa\u00f9\u00fb\u00fc", // úùûü
-				"U" : "\u00da\u00d9\u00db\u00dc" // ÚÙÛÜ
+				"ss": "\u00df", // ß (s sharp)
+				"SS": "\u1e9e", // ẞ (Capital sharp s)
+				"u" : "\u00fa\u00f9\u00fb\u00fc\u016f", // úùûüů
+				"U" : "\u00da\u00d9\u00db\u00dc\u016e" // ÚÙÛÜŮ
 			};
 			ts.replaceAccents = function(s) {
 				var a, acc = '[', eq = ts.characterEquivalents;
@@ -1133,7 +1140,7 @@
 
 			ts.isDigit = function(s) {
 				// replace all unwanted chars and match
-				return isNaN(s) ? (/^[\-+(]?\d+[)]?$/).test(s.toString().replace(/[,.'\s]/g, '')) : true;
+				return isNaN(s) ? (/^[\-+(]?\d+[)]?$/).test(s.toString().replace(/[,.'"\s]/g, '')) : true;
 			};
 
 		}()
@@ -1164,7 +1171,7 @@
 	ts.addParser({
 		id: "currency",
 		is: function(s) {
-			return (/^\(?[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]\d+/).test(s); // £$€¤¥¢
+			return (/^\(?\d+[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]|[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]\d+\)?$/).test(s); // £$€¤¥¢
 		},
 		format: function(s, table) {
 			return ts.formatFloat(s.replace(/[^\w,. \-()]/g, ""), table);
@@ -1214,7 +1221,7 @@
 	ts.addParser({
 		id: "percent",
 		is: function(s) {
-			return (/\d%\)?$/).test(s);
+			return (/(\d\s?%|%\s?\d)/).test(s);
 		},
 		format: function(s, table) {
 			return ts.formatFloat(s.replace(/%/g, ""), table);
@@ -1225,7 +1232,8 @@
 	ts.addParser({
 		id: "usLongDate",
 		is: function(s) {
-			return (/^[A-Z]{3,10}\.?\s+\d{1,2},?\s+(\d{4}|'?\d{2})\s+(([0-2]?\d:[0-5]\d)|([0-1]?\d:[0-5]\d\s?([AP]M)))$/i).test(s);
+			// two digit years are not allowed cross-browser
+			return (/^[A-Z]{3,10}\.?\s+\d{1,2},?\s+(\d{4})(\s+\d{1,2}:\d{2}(:\d{2})?(\s+[AP]M)?)?$/i).test(s);
 		},
 		format: function(s, table) {
 			return ts.formatFloat( (new Date(s.replace(/(\S)([AP]M)$/i, "$1 $2")).getTime() || ''), table);
@@ -1236,8 +1244,8 @@
 	ts.addParser({
 		id: "shortDate", // "mmddyyyy", "ddmmyyyy" or "yyyymmdd"
 		is: function(s) {
-			// testing for ####-##-#### - so it's not perfect
-			return (/^(\d{2}|\d{4})[\/\-\,\.\s+]\d{2}[\/\-\.\,\s+](\d{2}|\d{4})$/).test(s);
+			// testing for ####-##-####, so it's not perfect
+			return (/^(\d{1,2}|\d{4})[\/\-\,\.\s+]\d{1,2}[\/\-\.\,\s+](\d{1,2}|\d{4})$/).test(s);
 		},
 		format: function(s, table, cell, cellIndex) {
 			var c = table.config, ci = c.headerList[cellIndex],
