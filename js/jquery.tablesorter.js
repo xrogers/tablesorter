@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.6 - Client-side table sorting with ease!
+* TableSorter 2.6.1 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.5.2";
+			ts.version = "2.6.1";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -169,7 +169,9 @@
 				var c = table.config,
 					tb = $(table.tBodies).filter(':not(.' + c.cssInfoBlock + ')'),
 					rows, list, l, i, h, ch, p, parsersDebug = "";
-				if ( tb.length === 0) { return; } // In the case of empty tables
+				if ( tb.length === 0) {
+					return c.debug ? log('*Empty table!* Not building a parser cache') : '';
+				}
 				rows = tb[0].rows;
 				if (rows[0]) {
 					list = [];
@@ -211,6 +213,10 @@
 				parsers = tc.parsers,
 				t, v, i, j, k, c, cols, cacheTime, colMax = [];
 				tc.cache = {};
+				// if no parsers found, return - it's an empty table.
+				if (!parsers) {
+					return tc.debug ? log('*Empty table!* Not building a cache') : '';
+				}
 				if (tc.debug) {
 					cacheTime = new Date();
 				}
@@ -516,7 +522,9 @@
 			ts.construct = function(settings) {
 				return this.each(function() {
 					// if no thead or tbody, or tablesorter is already present, quit
-					if (!this.tHead || this.tBodies.length === 0 || this.hasInitialized === true) { return; }
+					if (!this.tHead || this.tBodies.length === 0 || this.hasInitialized === true) {
+						return (this.config.debug) ? log('stopping initialization! No thead, tbody or tablesorter has already been initialized') : '';
+					}
 					// declare
 					var $cell, $this = $(this),
 						c, i, j, k = '', a, s, o, downTime,
@@ -1087,7 +1095,7 @@
 				// remove previous widgets
 				for (i = 0; i < l; i++){
 					if ( w[i] && w[i].id && (doAll || $.inArray( w[i].id, cw ) < 0) ) {
-						if (c.debug) { log( 'removing ' + w[i].id  ); }
+						if (c.debug) { log( 'Refeshing widgets: Removing ' + w[i].id  ); }
 						if (w[i].hasOwnProperty('remove')) { w[i].remove(table, c, c.widgetOptions); }
 					}
 				}
@@ -1121,7 +1129,11 @@
 
 			ts.formatFloat = function(s, table) {
 				if (typeof(s) !== 'string' || s === '') { return s; }
-				if (table.config.usNumberFormat !== false) {
+				// allow using formatFloat without a table; defaults to US number format
+				var i,
+					t = table && table.hasOwnProperty('config') ? table.config.usNumberFormat !== false :
+						typeof table !== "undefined" ? table : true;
+				if (t) {
 					// US Format - 1,234,567.89 -> 1234567.89
 					s = s.replace(/,/g,'');
 				} else {
@@ -1133,7 +1145,7 @@
 					// make (#) into a negative number -> (10) = -10
 					s = s.replace(/^\s*\(/,'-').replace(/\)/,'');
 				}
-				var i = parseFloat(s);
+				i = parseFloat(s);
 				// return the text instead of zero
 				return isNaN(i) ? $.trim(s) : i;
 			};
