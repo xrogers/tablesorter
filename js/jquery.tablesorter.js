@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.6.1 - Client-side table sorting with ease!
+* TableSorter 2.6.2 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.6.1";
+			ts.version = "2.6.2";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -318,7 +318,7 @@
 			function computeThIndexes(t) {
 				var matrix = [],
 				lookup = {},
-				trs = $(t).find('thead:eq(0) tr, tfoot tr'),
+				trs = $(t).find('thead:eq(0), tfoot').children('tr'), // children tr in tfoot - see issue #196
 				i, j, k, l, c, cells, rowIndex, cellId, rowSpan, colSpan, firstAvailCol, matrixrow;
 				for (i = 0; i < trs.length; i++) {
 					cells = trs[i].cells;
@@ -1131,7 +1131,7 @@
 				if (typeof(s) !== 'string' || s === '') { return s; }
 				// allow using formatFloat without a table; defaults to US number format
 				var i,
-					t = table && table.hasOwnProperty('config') ? table.config.usNumberFormat !== false :
+					t = table && table.config ? table.config.usNumberFormat !== false :
 						typeof table !== "undefined" ? table : true;
 				if (t) {
 					// US Format - 1,234,567.89 -> 1234567.89
