@@ -1,4 +1,4 @@
-/*! tableSorter 2.4+ widgets - updated 12/26/2012
+/*! tableSorter 2.4+ widgets - updated 1/4/2013
  *
  * Column Styles
  * Column Filters
@@ -81,7 +81,8 @@ $.tablesorter.storage = function(table, key, val){
 			v = (d !== 0) ? $.parseJSON(k[d]) || {} : {};
 		}
 	}
-	if (val && JSON && JSON.hasOwnProperty('stringify')){
+	// allow val to be an empty string to 
+	if ((val || val === '') && window.JSON && JSON.hasOwnProperty('stringify')){
 		// add unique identifiers = url pathname > table ID/index on page > data
 		if (!v[url]) {
 			v[url] = {};
@@ -96,7 +97,7 @@ $.tablesorter.storage = function(table, key, val){
 			document.cookie = key + '=' + (JSON.stringify(v)).replace(/\"/g,'\"') + '; expires=' + d.toGMTString() + '; path=/';
 		}
 	} else {
-		return ( v && v.hasOwnProperty(url) && v[url].hasOwnProperty(id) ) ? v[url][id] : {};
+		return v && v[url] ? v[url][id] : {};
 	}
 };
 
@@ -199,7 +200,7 @@ $.tablesorter.addWidget({
 		$tbl = $(table),
 		c = table.config,
 		wo = c.widgetOptions,
-		b = $tbl.children('tbody:not(.' + c.cssInfoBlock + ')'),
+		b = c.$tbodies,
 		list = c.sortList,
 		len = list.length,
 		css = [ "primary", "secondary", "tertiary" ]; // default options
@@ -213,7 +214,7 @@ $.tablesorter.addWidget({
 		}
 		// check if there is a sort (on initialization there may not be one)
 		for (k = 0; k < b.length; k++ ){
-			$tb = $.tablesorter.processTbody(table, $(b[k]), true); // detach tbody
+			$tb = $.tablesorter.processTbody(table, b.eq(k), true); // detach tbody
 			$tr = $tb.children('tr');
 			l = $tr.length;
 			// loop through the visible rows
@@ -261,10 +262,12 @@ $.tablesorter.addWidget({
 	},
 	remove: function(table, c, wo){
 		var k, $tb,
-			b = $(table).children('tbody:not(.' + c.cssInfoBlock + ')'),
+			b = c.$tbodies,
 			rmv = (c.widgetOptions.columns || [ "primary", "secondary", "tertiary" ]).join(' ');
+		c.$headers.removeClass(rmv);
+		$(table).children('tfoot').children('tr').children('th, td').removeClass(rmv);
 		for (k = 0; k < b.length; k++ ){
-			$tb = $.tablesorter.processTbody(table, $(b[k]), true); // remove tbody
+			$tb = $.tablesorter.processTbody(table, b.eq(k), true); // remove tbody
 			$tb.children('tr').each(function(){
 				$(this).children().removeClass(rmv);
 			});
@@ -300,7 +303,7 @@ $.tablesorter.addWidget({
 			wo = c.widgetOptions,
 			css = wo.filter_cssFilter || 'tablesorter-filter',
 			$t = $(table).addClass('hasFilters'),
-			b = $t.children('tbody:not(.' + c.cssInfoBlock + ')'),
+			b = c.$tbodies,
 			cols = c.parsers.length,
 			reg = [ // regex used in filter "check" functions
 				/^\/((?:\\\/|[^\/])+)\/([mig]{0,3})?$/, // 0 = regex to test for regex
@@ -354,7 +357,7 @@ $.tablesorter.addWidget({
 				if (c.debug) { time = new Date(); }
 
 				for (k = 0; k < b.length; k++ ){
-					$tb = $.tablesorter.processTbody(table, $(b[k]), true);
+					$tb = $.tablesorter.processTbody(table, b.eq(k), true);
 					$tr = $tb.children('tr');
 					l = $tr.length;
 					if (cv === '' || wo.filter_serversideFiltering){
@@ -645,14 +648,14 @@ $.tablesorter.addWidget({
 	remove: function(table, c, wo){
 		var k, $tb,
 			$t = $(table),
-			b = $t.children('tbody:not(.' + c.cssInfoBlock + ')');
+			b = c.$tbodies;
 		$t
 			.removeClass('hasFilters')
 			// add .tsfilter namespace to all BUT search
 			.unbind('addRows updateCell update appendCache search'.split(' ').join('.tsfilter'))
 			.find('.tablesorter-filter-row').remove();
 		for (k = 0; k < b.length; k++ ){
-			$tb = $.tablesorter.processTbody(table, $(b[k]), true); // remove tbody
+			$tb = $.tablesorter.processTbody(table, b.eq(k), true); // remove tbody
 			$tb.children().removeClass('filtered').show();
 			$.tablesorter.processTbody(table, $tb, false); // restore tbody
 		}
@@ -679,7 +682,7 @@ $.tablesorter.addWidget({
 			innr = '.tablesorter-header-inner',
 			firstRow = hdrCells.eq(0).parent(),
 			tfoot = $table.find('tfoot'),
-			t2 = $table.clone(), // clone table, but don't remove id... the table might be styled by css
+			t2 = wo.$sticky = $table.clone(), // clone table, but don't remove id... the table might be styled by css
 			// clone the entire thead - seems to work in IE8+
 			stkyHdr = t2.children('thead:first')
 				.addClass(css)
@@ -791,6 +794,7 @@ $.tablesorter.addWidget({
 			.removeClass('hasStickyHeaders')
 			.unbind('sortEnd.tsSticky pagerComplete.tsSticky')
 			.find('.' + css).remove();
+		if (wo.$sticky) { wo.$sticky.remove(); } // remove cloned thead
 		$(window).unbind('scroll.tsSticky resize.tsSticky');
 	}
 });
