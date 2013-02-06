@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.7.5 - Client-side table sorting with ease!
+* TableSorter 2.7.6 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.7.5";
+			ts.version = "2.7.6";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -551,7 +551,7 @@
 				return this.each(function() {
 					// if no thead or tbody, or tablesorter is already present, quit
 					if (!this.tHead || this.tBodies.length === 0 || this.hasInitialized === true) {
-						return (this.config.debug) ? log('stopping initialization! No thead, tbody or tablesorter has already been initialized') : '';
+						return (this.config && this.config.debug) ? log('stopping initialization! No thead, tbody or tablesorter has already been initialized') : '';
 					}
 					// declare
 					var $cell, $this = $(this), $t0 = this,
