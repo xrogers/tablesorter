@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.7.8 - Client-side table sorting with ease!
+* TableSorter 2.7.9 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.7.8";
+			ts.version = "2.7.9";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -452,7 +452,7 @@
 				if (table.config.widthFixed && $(table).find('colgroup').length === 0) {
 					var colgroup = $('<colgroup>'),
 						overallWidth = $(table).width();
-					$("tr:first td", table.tBodies[0]).each(function() {
+					$(table.tBodies[0]).find("tr:first").children("td").each(function() {
 						colgroup.append($('<col>').css('width', parseInt(($(this).width()/overallWidth)*1000, 10)/10 + '%'));
 					});
 					$(table).prepend(colgroup);
