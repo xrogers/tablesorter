@@ -1,4 +1,4 @@
-/*! tableSorter 2.4+ widgets - updated 2/22/2013
+/*! tableSorter 2.4+ widgets - updated 2/24/2013
  *
  * Column Styles
  * Column Filters
@@ -74,11 +74,11 @@ $.tablesorter.storage = function(table, key, val){
 	// *** get val ***
 	if ($.parseJSON){
 		if (ls){
-			v = $.parseJSON(localStorage[key] || '') || {};
+			v = $.parseJSON(localStorage[key] || '{}');
 		} else {
 			k = document.cookie.split(/[;\s|=]/); // cookie
 			d = $.inArray(key, k) + 1; // add one to get from the key to the value
-			v = (d !== 0) ? $.parseJSON(k[d] || '') || {} : {};
+			v = (d !== 0) ? $.parseJSON(k[d] || '{}') : {};
 		}
 	}
 	// allow val to be an empty string to 
@@ -410,7 +410,7 @@ $.tablesorter.addWidget({
 										}
 									// Look for quotes or equals to get an exact match; ignore type since xi could be numeric
 									/*jshint eqeqeq:false */
-									} else if (reg.exact.test(val) && xi == val.replace(reg.exact, '')){
+									} else if (val.replace(reg.exact, '') == xi){
 										ff = true;
 									// Look for a not match
 									} else if (/^\!/.test(val)){
@@ -576,22 +576,23 @@ $.tablesorter.addWidget({
 				if (e.type === 'filterReset') {
 					$t.find('.' + css).val('');
 				}
-				checkFilters(e.type === 'search' ? filter : '');
+				// send false argument to force a new search; otherwise if the filter hasn't changed, it will return
+				checkFilters(e.type === 'search' ? filter : false);
 				return false;
 			})
 			.find('input.' + css).bind('keyup search', function(e, filter){
 				// ignore arrow and meta keys; allow backspace
-				if ((e.which < 32 && e.which !== 8) || (e.which >= 37 && e.which <=40)) { return; }
+				if (e.type === 'keyup' && ((e.which < 32 && e.which !== 8) || (e.which >= 37 && e.which <=40))) { return; }
 				// skip delay
-				if (typeof filter !== 'undefined'){
+				if (typeof filter !== 'undefined' && filter !== true){
 					checkFilters(filter);
-					return false;
 				}
 				// delay filtering
 				clearTimeout(timer);
 				timer = setTimeout(function(){
-					checkFilters();
+					checkFilters(false);
 				}, wo.filter_searchDelay || 300);
+				return false;
 			});
 
 			// parse columns after formatter, in case the class is added at that point
@@ -981,14 +982,15 @@ $.tablesorter.addWidget({
 		thisWidget.format(table, true);
 	},
 	format: function(table, init){
-		var sl, time, c = table.config,
+		var sl, time, $t = $(table),
+			c = table.config,
 			wo = c.widgetOptions,
 			ss = wo.saveSort !== false, // make saveSort active/inactive; default to true
 			sortList = { "sortList" : c.sortList };
 		if (c.debug){
 			time = new Date();
 		}
-		if ($(table).hasClass('hasSaveSort')){
+		if ($t.hasClass('hasSaveSort')){
 			if (ss && table.hasInitialized && $.tablesorter.storage){
 				$.tablesorter.storage( table, 'tablesorter-savesort', sortList );
 				if (c.debug){
@@ -997,7 +999,7 @@ $.tablesorter.addWidget({
 			}
 		} else {
 			// set table sort on initial run of the widget
-			$(table).addClass('hasSaveSort');
+			$t.addClass('hasSaveSort');
 			sortList = '';
 			// get data
 			if ($.tablesorter.storage){
@@ -1006,6 +1008,9 @@ $.tablesorter.addWidget({
 				if (c.debug){
 					$.tablesorter.benchmark('saveSort: Last sort loaded: "' + sortList + '"', time);
 				}
+				$t.bind('saveSortReset', function(){
+					$.tablesorter.storage( table, 'tablesorter-savesort', '' );
+				});
 			}
 			// init is true when widget init is run, this will run this widget before all other widgets have initialized
 			// this method allows using this widget in the original tablesorter plugin; but then it will run all widgets twice.
@@ -1013,7 +1018,7 @@ $.tablesorter.addWidget({
 				c.sortList = sortList;
 			} else if (table.hasInitialized && sortList && sortList.length > 0){
 				// update sort change
-				$(table).trigger('sorton', [sortList]);
+				$t.trigger('sorton', [sortList]);
 			}
 		}
 	},

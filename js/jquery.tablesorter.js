@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.7.10 - Client-side table sorting with ease!
+* TableSorter 2.7.11 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.7.10";
+			ts.version = "2.7.11";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -963,7 +963,7 @@
 			ts.getTextValue = function(a, mx, d) {
 				if (mx) {
 					// make sure the text value is greater than the max numerical value (mx)
-					var i, l = a.length, n = mx + d;
+					var i, l = a ? a.length : 0, n = mx + d;
 					for (i = 0; i < l; i++) {
 						n += a.charCodeAt(i);
 					}
