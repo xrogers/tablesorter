@@ -1,6 +1,6 @@
 /*!
  * tablesorter pager plugin
- * updated 2/20/2013
+ * updated 3/27/2013
  */
 /*jshint browser:true, jquery:true, unused:false */
 ;(function($) {
@@ -468,24 +468,30 @@
 						updatePageDisplay(table, c);
 						fixHeight(table, c);
 					})
-					.bind('disable.pager', function(){
+					.bind('disable.pager', function(e){
+						e.stopPropagation();
 						showAllRows(table, c);
 					})
-					.bind('enable.pager', function(){
+					.bind('enable.pager', function(e){
+						e.stopPropagation();
 						enablePager(table, c, true);
 					})
-					.bind('destroy.pager', function(){
+					.bind('destroy.pager', function(e){
+						e.stopPropagation();
 						destroyPager(table, c);
 					})
-					.bind('update.pager', function(){
+					.bind('update.pager', function(e){
+						e.stopPropagation();
 						hideRows(table, c);
 					})
 					.bind('pageSize.pager', function(e,v){
+						e.stopPropagation();
 						c.size = parseInt(v, 10) || 10;
 						hideRows(table, c);
 						updatePageDisplay(table, c);
 					})
 					.bind('pageSet.pager', function(e,v){
+						e.stopPropagation();
 						c.page = (parseInt(v, 10) || 1) - 1;
 						moveToPage(table, c);
 						updatePageDisplay(table, c);

@@ -1,4 +1,4 @@
-/*! tableSorter 2.4+ widgets - updated 2/24/2013
+/*! tableSorter 2.4+ widgets - updated 3/27/2013
  *
  * Column Styles
  * Column Filters
@@ -262,7 +262,7 @@ $.tablesorter.addWidget({
 	remove: function(table, c, wo){
 		var k, $tb,
 			b = c.$tbodies,
-			rmv = (c.widgetOptions.columns || [ "primary", "secondary", "tertiary" ]).join(' ');
+			rmv = (wo.columns || [ "primary", "secondary", "tertiary" ]).join(' ');
 		c.$headers.removeClass(rmv);
 		$(table).children('tfoot').children('tr').children('th, td').removeClass(rmv);
 		for (k = 0; k < b.length; k++ ){
@@ -304,7 +304,7 @@ $.tablesorter.addWidget({
 			wo = c.widgetOptions,
 			css = wo.filter_cssFilter || 'tablesorter-filter',
 			$t = $(table).addClass('hasFilters'),
-			b = c.$tbodies,
+			b = $t.find('tbody'),
 			cols = c.parsers.length,
 			reg = { // regex used in filter "check" functions
 				"regex" : /^\/((?:\\\/|[^\/])+)\/([mig]{0,3})?$/, // regex to test for regex
@@ -352,10 +352,11 @@ $.tablesorter.addWidget({
 				}
 			},
 			findRows = function(filter, v, cv){
-				var $tb, $tr, $td, cr, r, l, ff, time, arry, r1, r2;
+				var $tb, $tr, $td, cr, r, l, ff, time, r1, r2;
 				if (c.debug) { time = new Date(); }
 
 				for (k = 0; k < b.length; k++ ){
+					if (b.eq(k).hasClass(c.cssInfoBlock)) { continue; } // ignore info blocks, issue #264
 					$tb = $.tablesorter.processTbody(table, b.eq(k), true);
 					$tr = $tb.children('tr');
 					l = $tr.length;
@@ -462,6 +463,7 @@ $.tablesorter.addWidget({
 				}
 
 				last = cv; // save last search
+				$t.data('lastSearch', last);
 				if (c.debug){
 					ts.benchmark("Completed filter widget search", time);
 				}
@@ -569,15 +571,17 @@ $.tablesorter.addWidget({
 				}
 			}
 			$t
-			.bind('addRows updateCell update updateRows appendCache filterReset search '.split(' ').join('.tsfilter '), function(e, filter){
+			.bind('addRows updateCell update updateRows updateComplete appendCache filterReset search '.split(' ').join('.tsfilter '), function(e, filter){
 				if (!/(search|filterReset)/.test(e.type)){
+					e.stopPropagation();
 					buildDefault(true);
 				}
 				if (e.type === 'filterReset') {
 					$t.find('.' + css).val('');
 				}
 				// send false argument to force a new search; otherwise if the filter hasn't changed, it will return
-				checkFilters(e.type === 'search' ? filter : false);
+				filter = e.type === 'search' ? filter : e.type === 'updateComplete' ? $t.data('lastSearch') : false;
+				checkFilters(filter);
 				return false;
 			})
 			.find('input.' + css).bind('keyup search', function(e, filter){
@@ -700,7 +704,7 @@ $.tablesorter.addWidget({
 		$t
 			.removeClass('hasFilters')
 			// add .tsfilter namespace to all BUT search
-			.unbind('addRows updateCell update appendCache search filterStart filterEnd '.split(' ').join('.tsfilter '))
+			.unbind('addRows updateCell update updateComplete appendCache search filterStart filterEnd '.split(' ').join('.tsfilter '))
 			.find('.tablesorter-filter-row').remove();
 		for (k = 0; k < b.length; k++ ){
 			$tb = $.tablesorter.processTbody(table, b.eq(k), true); // remove tbody
@@ -941,7 +945,7 @@ $.tablesorter.addWidget({
 			position = e.pageX;
 		});
 		$tbl.find('thead:first')
-		.bind('mouseup.tsresize mouseleave.tsresize', function(e){
+		.bind('mouseup.tsresize mouseleave.tsresize', function(){
 			stopResize();
 		})
 		// right click to reset columns to default widths
@@ -953,7 +957,7 @@ $.tablesorter.addWidget({
 				return rtn;
 		});
 	},
-	remove: function(table, c, wo){
+	remove: function(table){
 		$(table)
 			.removeClass('hasResizable')
 			.find('thead')
@@ -977,14 +981,15 @@ $.tablesorter.resizableReset = function(table){
 // **************************
 $.tablesorter.addWidget({
 	id: 'saveSort',
-	init: function(table, thisWidget){
+	init: function(table, thisWidget, c, wo){
 		// run widget format before all other widgets are applied to the table
-		thisWidget.format(table, true);
+		thisWidget.format(table, c, wo, true);
 	},
-	format: function(table, init){
+	format: function(table, c, wo, init){
+		// redefining c & wo for backwards compatibility
+		c = table.config;
+		wo = c.widgetOptions;
 		var sl, time, $t = $(table),
-			c = table.config,
-			wo = c.widgetOptions,
 			ss = wo.saveSort !== false, // make saveSort active/inactive; default to true
 			sortList = { "sortList" : c.sortList };
 		if (c.debug){
@@ -1008,7 +1013,8 @@ $.tablesorter.addWidget({
 				if (c.debug){
 					$.tablesorter.benchmark('saveSort: Last sort loaded: "' + sortList + '"', time);
 				}
-				$t.bind('saveSortReset', function(){
+				$t.bind('saveSortReset', function(e){
+					e.stopPropagation();
 					$.tablesorter.storage( table, 'tablesorter-savesort', '' );
 				});
 			}
@@ -1022,7 +1028,7 @@ $.tablesorter.addWidget({
 			}
 		}
 	},
-	remove: function(table, c, wo){
+	remove: function(table){
 		// clear storage
 		if ($.tablesorter.storage) { $.tablesorter.storage( table, 'tablesorter-savesort', '' ); }
 	}
