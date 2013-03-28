@@ -43,6 +43,18 @@ tablesorter can successfully parse and sort many types of data including linked 
 
 View the [complete listing here](https://github.com/Mottie/tablesorter/wiki/Change).
 
+#### Version 2.8.2 (3/28/2013)
+
+* Updated the "ignore-leads" parser:
+  * Renamed the parser to "ignore-articles"
+  * Added language support and a few languages
+  * Added a method to add custom articles.
+  * Please see the [updated demo](http://mottie.github.com/tablesorter/docs/example-parsers-ignore-articles.html) (also renamed)
+  * Thanks for [thezoggy](https://github.com/thezoggy) for feedback.
+* Fixed a bug in the grouping widget demo:
+  * The "priority (letter)" column was incorrectly parsing the data which, for some reason, worked in some browsers.
+  * Thanks again to [thezoggy](https://github.com/thezoggy) for reporting [this issue](https://github.com/Mottie/tablesorter/issues/267).
+
 #### Version 2.8.1 (3/27/2013)
 
 * Added `customAjaxUrl` option to the pager:
@@ -72,7 +84,7 @@ View the [complete listing here](https://github.com/Mottie/tablesorter/wiki/Chan
   * [Date library](http://mottie.github.com/tablesorter/docs/example-parsers-dates.html) (sugar &amp; datejs)
   * ISO 8601 date by [Sean Ellingham](https://github.com/seanellingham) (no demo, yet)
   * [Metric prefixes](http://mottie.github.com/tablesorter/docs/example-parsers-metric.html)
-  * [Ignore leads](example-parsers-ignore-leads.html) parser (ignores "A", "An" and "The" in titles)
+  * [Ignore leads](http://mottie.github.com/tablesorter/docs/example-parsers-ignore-articles.html) parser (ignores "A", "An" and "The" in titles)
   * [Inputs, checkbox and select parsers](http://mottie.github.com/tablesorter/docs/example-widget-grouping.html). These parsers automatically update on element changes, but requires jQuery 1.7+.
 
 * Tablesorter's "update" method now checks if a column sort has been enabled or disabled:
