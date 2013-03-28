@@ -20,6 +20,9 @@
 			// and a filterList = [[2,Blue],[3,13]] becomes "&fcol[2]=Blue&fcol[3]=13" in the url
 			ajaxUrl: null,
 
+			// modify the url after all processing has been applied
+			customAjaxUrl: function(table, url) { return url; },
+
 			// process ajax so that the following information is returned:
 			// [ total_rows (number), rows (array of arrays), headers (array; optional) ]
 			// example:
@@ -227,7 +230,7 @@
 						$f.eq(j).html( th[j] );
 					});
 				}
-				
+
 				$t.find('thead tr.' + c.cssErrorRow).remove(); // Clean up any previous error.
 				if ( exception ) {
 					// add error row to thead instead of tbody, or clicking on the header will result in a parser error
@@ -270,7 +273,7 @@
 				});
 			}
 		},
-		
+
 		getAjaxUrl = function(table, c) {
 			var url = (c.ajaxUrl) ? c.ajaxUrl.replace(/\{page\}/g, c.page).replace(/\{size\}/g, c.size) : '',
 			sl = table.config.sortList,
@@ -278,6 +281,7 @@
 			sortCol = url.match(/\{sortList[\s+]?:[\s+]?([^}]*)\}/),
 			filterCol = url.match(/\{filterList[\s+]?:[\s+]?([^}]*)\}/),
 			arry = [];
+
 			if (sortCol) {
 				sortCol = sortCol[1];
 				$.each(sl, function(i,v){
@@ -296,7 +300,11 @@
 				// if the arry is empty, just add the fcol parameter... "&{filterList:fcol}" becomes "&fcol"
 				url = url.replace(/\{filterList[\s+]?:[\s+]?([^\}]*)\}/g, arry.length ? arry.join('&') : filterCol );
 			}
-			
+
+			if ( typeof(c.customAjaxUrl) === "function" ) {
+				url = c.customAjaxUrl(table, url);
+			}
+
 			return url;
 		},
 
@@ -561,7 +569,7 @@
 				}
 
 				changeHeight(table, c);
-	
+
 				// pager initialized
 				if (!c.ajax) {
 					c.initialized = true;
