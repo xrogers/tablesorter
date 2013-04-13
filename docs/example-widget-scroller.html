@@ -2,7 +2,7 @@
 <html>
 <head>
  <meta charset="utf-8">
-	<title>jQuery plugin: Tablesorter 2.0 - Sticky Header Widget</title>
+	<title>jQuery plugin: Tablesorter 2.0 - Scroller Widget</title>
 
 	<!-- jQuery -->
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.js"></script>
@@ -28,41 +28,31 @@
 	<!-- Tablesorter script: required -->
 	<script src="../js/jquery.tablesorter.js"></script>
 	<script src="../js/jquery.tablesorter.widgets.js"></script>
+	<script src="../js/widgets/widget-scroller.js"></script>
 
 	<script id="js">$(function(){
 
 	$("table").tablesorter({
-
 		widthFixed : true,
 		showProcessing: true,
-
-		headerTemplate : '{content} {icon}', // Add icon for jui theme; new in v2.7!
-
-		widgets: [ 'uitheme', 'zebra', 'stickyHeaders', 'filter' ],
-
-		widgetOptions: {
-
-			// css class name applied to the sticky header row (tr)
-			stickyHeaders : 'tablesorter-stickyHeader',
-
-			// adding zebra striping, using content and default styles - the ui css removes the background from default
-			// even and odd class names included for this demo to allow switching themes
-			zebra   : ["ui-widget-content even", "ui-state-default odd"],
-
-			// use uitheme widget to apply defauly jquery ui (jui) class names
-			// see the uitheme demo for more details on how to change the class names
-			uitheme : 'jui'
-
+		headerTemplate : '{content} {icon}',
+		widgets: [ 'uitheme', 'zebra', 'filter', 'scroller' ],
+		widgetOptions : {
+			scroller_height : 300,
+			scroller_barWidth : 17,
+			scroller_jumpToHeader: true,
+			scroller_idPrefix : 's_'
 		}
-
 	});
 
-}); </script>
+});</script>
 <script>
 $(function() {
 	$('link.theme').each(function(){ this.disabled = true; });
 
-	var themes = 'default blue green grey ice black-ice dark dropbox',
+	var b = true, $tbl,
+		$c = $('#case'),
+		themes = 'default blue green grey ice black-ice dark dropbox',
 		i, o = '', t = themes.split(' ');
 	for (i = 0; i < t.length; i++) {
 		o += '<option>' + t[i] + '</option>';
@@ -78,7 +68,19 @@ $(function() {
 			$('table')
 				.removeClass('tablesorter-' + t.join(' tablesorter-') + ' tablesorter-jui')
 				.addClass('tablesorter-' + theme.replace(/-/,''));
+			// make sure columns align
+			$(window).trigger('resize');
 		});
+
+	$tbl = $('.tablesorter-scroller-table table');
+	$('button').click(function(){
+		b = !b;
+		$tbl.each(function(){
+			this.config.widgetOptions.scroller_jumpToHeader = b;
+			$c.html(b + '');
+		});
+	});
+
 });
 </script>
 </head>
@@ -86,7 +88,7 @@ $(function() {
 
 <div id="banner">
 	<h1>table<em>sorter</em></h1>
-	<h2>Sticky Header Widget</h2>
+	<h2>Scroller Widget</h2>
 	<h3>Flexible client-side table sorting</h3>
 	<a href="index.html">Back to documentation</a>
 </div>
@@ -96,21 +98,17 @@ $(function() {
 	<p class="tip">
 		<em>NOTE!</em>
 		<ul>
-			<li>As of tablesorter version 2.9+, this widget can no longer be applied to versions of tablesorter prior to version 2.8.</li>
-			<li>Added a widget option named <code>stickyHeaders_cloneId</code> <span class="tip"><em>New!</em></span> v2.9!
+			<li>This widget can not be applied to the original plugin and requires jQuery version 1.4+ to function properly; if you need to make it work with older versions of jQuery and the plugin, please use <a href="http://tconnell.com/samples/scroller/">this version</a> of the widget.</li>
+			<li>This widget was originally written by <a href="http://tconnell.com/samples/scroller/">Connell & Associates, Inc.</a> and is dual-licensed under the MIT and GPL licenses. It has been modified to work with tablesorter version 2.9+.</li>
+			<li>Scroller widget options include:
 				<ul>
-					<li>It contains a suffix to add to any table id.</li>
-					<li>Its default value is <code>-sticky</code> </li>
+					<li><code>scroller_height</code> - Set the height of the scroll window in pixels (default is <code>300</code>.</li>
+					<li><code>scroller_barWidth</code> - Set the width (default is <code>17</code>) of the scroll bar in pixels. This will need to be changed if using a custom scroll bar plugin.</li>
+					<li><code>scroller_idPrefix</code> - This option contains a prefix string which is added to a random number. This id is then assigned to the wrapping scroll element. Modification is not necessary unless the prefix interferes with ID's already on your page.</li>
+					<li><code>scroller_jumpToHeader</code> - When <code>true</code>, this option makes the table header jump into view when the table body is not scolled to the top and while scrolling up the page. It's not perfect, but it works. Disable it as desired.<br>
+					<span class="remark">*</span> <em>To see the difference, toggle the button in the demo below, then scroll down &amp; up the page using a mouse wheel with the cursor at the horizontal center of the page and about 100 pixels from the top, so the cursor is within the table body.</em></li>
 				</ul>
 			</li>
-			<li>Table captions and any additional rows (filter widget row) will also be included in the sticky header <span class="tip"><em>New!</em></span> v2.9!</li> 
-			<li>You will need to modify the <code>headerTemplate</code> option to include the jQuery UI icon! See the example in the code. <span class="tip"><em>New!</em></span> v2.7!</li>
-			<li>Scroll down the page to see the headers stick. Then sort the columns using the sticky headers!</li>
-			<li>Added a widget option named <code>stickyHeader</code> option which contains the css class name applied to the actual sticky header (v2.1).</li>
-			<li>Multiple rows in the header will become sticky (v2.1.17).</li>
-			<li>The filter widget adds a row to the table header, but that row will not be included in the sticky header.</li>
-			<li>Add the class name <code>sticky-false</code> to any header rows you don't want to become sticky (v2.1.18).</li>
-			<li>Because of the limitations of Internet Explorer version 7 and older, this widget will not work.</li>
 		</ul>
 	</p>
 
@@ -123,11 +121,12 @@ $(function() {
 	Choose Theme:
 	<select>
 		<option value="jui">Jquery UI</option>
-	</select>
-	<br><br>
+	</select><br>
+	<br>
+	<button>Toggle</button> scroller_jumpToHeader : <span id="case">true</span> (see the note above)<span class="remark">*</span>
+	<br>
 
 	<table class="tablesorter">
-	<caption>Student Grades</caption>
 	<thead>
 		<tr><th>Name</th><th>Major</th><th>Sex</th><th>English</th><th>Japanese</th><th>Calculus</th><th class="filter-false sorter-false">Geometry</th></tr>
 	</thead>
@@ -215,13 +214,8 @@ $(function() {
 	</div>
 
 	<div class="spacer"></div>
-	<div class="next-up">
-		<hr />
-		Next up: <a href="example-widget-zebra.html">Zebra stripe widget &rsaquo;&rsaquo;</a>
-	</div>
 
 </div>
 
 </body>
 </html>
-
