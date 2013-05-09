@@ -1,5 +1,5 @@
 /*!
-* TableSorter 2.9.1 - Client-side table sorting with ease!
+* TableSorter 2.10.0 - Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
@@ -24,7 +24,7 @@
 
 			var ts = this;
 
-			ts.version = "2.9.1";
+			ts.version = "2.10.0";
 
 			ts.parsers = [];
 			ts.widgets = [];
@@ -255,7 +255,7 @@
 								v = parsers[j].format(t, table, c[0].cells[j], j);
 								cols.push(v);
 								if ((parsers[j].type || '').toLowerCase() === "numeric") {
-									colMax[j] = Math.max(Math.abs(v), colMax[j] || 0); // determine column max value (ignore sign)
+									colMax[j] = Math.max(Math.abs(v) || 0, colMax[j] || 0); // determine column max value (ignore sign)
 								}
 							}
 							cols.push(tc.cache[k].normalized.length); // add position for rowCache
@@ -659,7 +659,7 @@
 
 			function bindEvents(table){
 				var c = table.config,
-					$this = $(table),
+					$this = c.$table,
 					j, downTime;
 				// apply event handling to headers
 				c.$headers
@@ -668,7 +668,7 @@
 				.unbind('mousedown.tablesorter mouseup.tablesorter sort.tablesorter')
 				.bind('mousedown.tablesorter mouseup.tablesorter sort.tablesorter', function(e, external) {
 					// jQuery v1.2.6 doesn't have closest()
-					var $cell = this.tagName.match('TH|TD') ? $(this) : $(this).parents('th, td').filter(':last'), cell = $cell[0];
+					var $cell = /TH|TD/.test(this.tagName) ? $(this) : $(this).parents('th, td').filter(':last'), cell = $cell[0];
 					// only recognize left clicks
 					if ((e.which || e.button) !== 1 && e.type !== 'sort') { return false; }
 					// set timer on mousedown
@@ -685,11 +685,13 @@
 				});
 				if (c.cancelSelection) {
 					// cancel selection
-					c.$headers.each(function() {
-						this.onselectstart = function() {
-							return false;
-						};
-					});
+					c.$headers
+						.attr('unselectable', 'on')
+						.bind('selectstart', false)
+						.css({
+							'user-select': 'none',
+							'MozUserSelect': 'none' // not needed for jQuery 1.8+
+						});
 				}
 				// apply easy methods that trigger bound events
 				$this
@@ -767,6 +769,7 @@
 					updateHeaderSortCount(table, list);
 					// set css for headers
 					setHeadersCss(table);
+					$this.trigger("sortBegin", this);
 					// sort the table and append it to the dom
 					multisort(table);
 					appendToTable(table, init);
@@ -1291,7 +1294,8 @@
 			return ts.isDigit(s);
 		},
 		format: function(s, table) {
-			return s ? ts.formatFloat(s.replace(/[^\w,. \-()]/g, ""), table) : s;
+			var n = ts.formatFloat((s || '').replace(/[^\w,. \-()]/g, ""), table);
+			return s && typeof n === 'number' ? n : s ? $.trim( s && table.config.ignoreCase ? s.toLocaleLowerCase() : s ) : s;
 		},
 		type: "numeric"
 	});
@@ -1302,7 +1306,8 @@
 			return (/^\(?\d+[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]|[\u00a3$\u20ac\u00a4\u00a5\u00a2?.]\d+\)?$/).test((s || '').replace(/[,. ]/g,'')); // £$€¤¥¢
 		},
 		format: function(s, table) {
-			return s ? ts.formatFloat(s.replace(/[^\w,. \-()]/g, ""), table) : s;
+			var n = ts.formatFloat((s || '').replace(/[^\w,. \-()]/g, ""), table);
+			return s && typeof n === 'number' ? n : s ? $.trim( s && table.config.ignoreCase ? s.toLocaleLowerCase() : s ) : s;
 		},
 		type: "numeric"
 	});

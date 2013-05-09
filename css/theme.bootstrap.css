@@ -92,6 +92,10 @@ caption {
 	-o-transition: height 0.1s ease;
 	transition: height 0.1s ease;
 }
+.tablesorter-bootstrap .tablesorter-filter-row .tablesorter-filter.disabled {
+	background: #eee;
+	cursor: not-allowed;
+}
 .tablesorter-bootstrap .tablesorter-filter-row td {
 	background: #eee;
 	line-height: normal;
@@ -126,4 +130,10 @@ caption {
 }
 .tablesorter-bootstrap .tablesorter-pager .pagedisplay {
 	border: 0;
+}
+
+/* ajax error row */
+.tablesorter .tablesorter-errorRow td {
+	cursor: pointer;
+	background-color: #e6bf99;
 }
