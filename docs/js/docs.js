@@ -73,7 +73,6 @@ $(function(){
 
 	// add high visibility tags for newest versions (just grab the major revision number 2.10.0 -> 10
 	v = parseFloat( $.tablesorter.version.split('.')[1] );
-	console.log(v);
 	$('.version').each(function(){
 		$t = $(this);
 		t = v - parseFloat( $t.text().replace(/(v|version|\+)/g, '').split('.')[1] );
@@ -93,10 +92,12 @@ function showProperty(){
 			if (h === '#csschildrow') {
 				$('#root .tablesorter-childRow').show();
 			}
-			// move below sticky header
-			if (/options/.test(prop.closest('table').attr('id') || '')) {
-				$(window).scrollTop( prop.position().top - 30 );
-			}
+			// move below sticky header; added delay as there could be some lag
+			setTimeout(function(){
+				if (/options/.test(prop.closest('table').attr('id') || '')) {
+					$(window).scrollTop( prop.position().top - 28 );
+				}
+			}, 200);
 		}
 	}
 }
@@ -128,6 +129,7 @@ var addParsedValues = function($t, cols, format){
 
 	$('.toggleparsedvalue').on('click', function(){
 		$('.val').toggleClass('hidden');
+		return false;
 	});
 
 };
