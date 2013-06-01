@@ -1,3 +1,7 @@
+#### **I'll be on sabbitical starting June 5, 2013 for approximately 2-3 months. So, sadly, I won't be able to fix any problems or add enhancements until I return. And I will return :)**
+
+---
+
 tablesorter is a jQuery plugin for turning a standard HTML table with THEAD and TBODY tags into a sortable table without page refreshes.
 tablesorter can successfully parse and sort many types of data including linked data in a cell.
 
@@ -42,6 +46,15 @@ tablesorter can successfully parse and sort many types of data including linked 
 ### Change Log
 
 View the [complete listing here](https://github.com/Mottie/tablesorter/wiki/Change).
+
+#### <a name="v2.10.7">Version 2.10.7</a> (5/31/2013)
+
+* Now using correct `closest()` function equivalent. Thanks to [isuTony](https://github.com/isuTony); Fixes [issue #319](https://github.com/Mottie/tablesorter/issues/319).
+* Anticipating my sabbitical, I've added a few "beta-testing" scripts into a new folder for feedback, code fixes and help:
+    * [Custom pager control script](http://mottie.github.io/tablesorter/beta-testing/example-pager-custom-controls.html) - should be working properly.
+    * [External filters using Select2 plugin](http://mottie.github.io/tablesorter/beta-testing/example-external-filters-using-select2.html) - should be working properly.
+    * [Column reorder widget](http://mottie.github.io/tablesorter/beta-testing/example-widget-column-reorder.html) - not working 100% with sticky headers.
+    * [Column sum widget](http://mottie.github.io/tablesorter/beta-testing/example-widget-sum-columns.html) - still needs LOTS of work!
 
 #### <a name="v2.10.6">Version 2.10.6</a> (5/30/2013)
 
