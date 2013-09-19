@@ -374,14 +374,15 @@
 
 			function buildHeaders(table) {
 				var header_index = computeThIndexes(table), ch, $t,
-					h, i, t, lock, time, c = table.config;
+					h, i, t, lock, time, c = table.config, index, incval;
 				c.headerList = [];
 				c.headerContent = [];
 				if (c.debug) {
 					time = new Date();
 				}
 				i = c.cssIcon ? '<i class="' + c.cssIcon + '"></i>' : ''; // add icon if cssIcon option exists
-				c.$headers = $(table).find(c.selectorHeaders).each(function(index) {
+				index = 0;
+				c.$headers = $(table).find(c.selectorHeaders).each(function(index2) {
 					$t = $(this);
 					ch = c.headers[index];
 					c.headerContent[index] = this.innerHTML; // save original header content
@@ -410,6 +411,8 @@
 					$t.parent().addClass(c.cssHeaderRow);
 					// allow keyboard cursor to focus on element
 					$t.attr("tabindex", 0);
+					incval = parseInt($t.attr('colspan'));
+					index += isNaN(incval) ? 1 : incval; 
 				});
 				// enable/disable sorting
 				updateHeader(table);
@@ -1389,15 +1392,17 @@
 		},
 		format: function(s, table, cell, cellIndex) {
 			if (s) {
-				var c = table.config, ci = c.headerList[cellIndex],
-				format = ci.dateFormat || ts.getData( ci, c.headers[cellIndex], 'dateFormat') || c.dateFormat;
-				s = s.replace(/\s+/g," ").replace(/[\-.,]/g, "/"); // escaped - because JSHint in Firefox was showing it as an error
-				if (format === "mmddyyyy") {
-					s = s.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/, "$3/$1/$2");
-				} else if (format === "ddmmyyyy") {
-					s = s.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/, "$3/$2/$1");
-				} else if (format === "yyyymmdd") {
-					s = s.replace(/(\d{4})[\/\s](\d{1,2})[\/\s](\d{1,2})/, "$1/$2/$3");
+				var c = table.config, ci = c.headerList[cellIndex], format;
+				if (ci != undefined) {
+					format = ci.dateFormat || ts.getData( ci, c.headers[cellIndex], 'dateFormat') || c.dateFormat;
+					s = s.replace(/\s+/g," ").replace(/[\-.,]/g, "/"); // escaped - because JSHint in Firefox was showing it as an error
+					if (format === "mmddyyyy") {
+						s = s.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/, "$3/$1/$2");
+					} else if (format === "ddmmyyyy") {
+						s = s.replace(/(\d{1,2})[\/\s](\d{1,2})[\/\s](\d{4})/, "$3/$2/$1");
+					} else if (format === "yyyymmdd") {
+						s = s.replace(/(\d{4})[\/\s](\d{1,2})[\/\s](\d{1,2})/, "$1/$2/$3");
+					}
 				}
 			}
 			return s ? ts.formatFloat( (new Date(s).getTime() || ''), table) : s;
